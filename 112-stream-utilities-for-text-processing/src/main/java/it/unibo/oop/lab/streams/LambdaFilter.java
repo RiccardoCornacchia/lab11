@@ -6,7 +6,9 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
+import java.util.Arrays;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -33,12 +35,27 @@ import javax.swing.JTextArea;
 public final class LambdaFilter extends JFrame {
 
     private static final long serialVersionUID = 1760990730218643730L;
+    private static final String ANY_NON_WORD = "(\\s|\\p{Punct})+";
 
     private enum Command {
         /**
          * Commands.
          */
-        IDENTITY("No modifications", Function.identity());
+        IDENTITY("No modifications", Function.identity()),
+        TO_LOWER("lowercase", String::toLowerCase),
+        COUNT("count chars number", s -> Integer.toString(s.length())),
+        COUNT_LINES("count lines number", s -> Long.toString(s.chars().filter(e -> e == 10).count() + 1)),
+    //chars() è lo stream per le stringhe, fornisce un insieme di codici UNICODE degli elementi nella stringa s (10=Unicode di \n, oppure uso '\n')
+        SORT("list in alphabetical order", s -> Arrays.stream(s.split(ANY_NON_WORD)).sorted().collect(Collectors.joining("\n"))),
+    //Arrays.stream() mi crea un array di caratteri della stringa, specificando però come splittarli. Usando ANY_NON_WORD mi splitta
+    //la stringa in modo da avere un array di caratteri che sono le parole che nella stringa erano separate da ogni cosa che non era un carattere
+
+    //funziona partendo da Arrays perchè poi joining() trasforma di default gli elementi in stringhe (in SORT e WORD_COUNT)
+        WORD_COUNT("count the number of words", s -> Arrays.stream(s.split(ANY_NON_WORD))
+                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                    .entrySet().stream()
+                    .map(e -> e.getKey() + " -> " + e.getValue()).collect(Collectors.joining("\n")))
+        ;
 
         private final String commandName;
         private final Function<String, String> fun;
