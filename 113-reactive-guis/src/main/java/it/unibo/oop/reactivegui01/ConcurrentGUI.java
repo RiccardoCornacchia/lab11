@@ -4,6 +4,8 @@ package it.unibo.oop.reactivegui01;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -43,7 +45,9 @@ public final class ConcurrentGUI extends JFrame {
          * java.util.concurrent.ExecutorService
          */
         final Agent agent = new Agent();
-        new Thread(agent).start();
+        ExecutorService ex = Executors.newCachedThreadPool();
+        ex.submit(agent);
+        
         /*
          * Register a listener that stops it
          */
@@ -56,7 +60,11 @@ public final class ConcurrentGUI extends JFrame {
      */
     private class Agent implements Runnable {
         /*
-         * Stop is volatile to ensure visibility. Look at:
+         * Stop is volatile to ensure visibility.
+         * Il modificatore volatile in Java è usato per indicare che una variabile può essere modificata da più thread
+         * in un'applicazione multithreading. Questo garantisce che i valori di quella variabile siano sempre letti
+         * direttamente dalla memoria principale e non dalla cache del thread.
+         * Look at:
          * 
          * http://archive.is/9PU5N - Sections 17.3 and 17.4
          * 
